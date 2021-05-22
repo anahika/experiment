@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My experiment</title>
+    <script src="jspsych-6.3.1/jspsych.js"></script>
+    <script src="jspsych-6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.3.1/plugins/jspsych-image-keyboard-response.js"></script>
+    <script src="jspsych-6.3.1/plugins/jspsych-preload.js"></script>
+    <script src="stimuli.js"></script>
+    <link href="jspsych-6.3.1/css/jspsych.css" rel="stylesheet" type="text/css">
+  </head>
+  <body></body>
+  <script>
+
+    /* create timeline */
+    var timeline = [];
+
+    /* define welcome message trial */
+    var welcome = {
+      type: "html-keyboard-response",
+      stimulus: "Welcome to the experiment. Press any key to begin."
+    };
+    timeline.push(welcome);
+
+    /* define instructions trial */
+    var instructions = {
+      type: 'html-keyboard-response',
+      stimulus: `<p>In the following experiment you will be shown pairs of words and asked to determine
+        whether the second word in each pair is a real word (e.g., "group" or "red") or a
+        non-word (e.g., "gork" or "polie").</p>
+        <p>First, a fixation cross will appear. The the first word in each pair will appear on the 
+        screen for a short time only. The second word will reamin on the screen until you
+        have decided whether it is a real word or a non-word. It is imperative that you make
+        your decisions as quickly as possible while still preserving the accuracy of you answers.</p>
+        <p>To indicate that a word is a real word, press the "W" key on the keyboard.</p>
+        <p>To indicate that a word is a non-word, press the "N" key on the keyboard.</p>
+        <p>Press any key to continue.</p>`,
+    }
+    timeline.push(instructions);
+
+// import data from js file
+    var target = {
+      type: 'html-keyboard-response',
+      stimulus: function(){
+        return `<p style="font-size: 48px; font-family: monospace;">${jsPsych.timelineVariable('word', true).toUpperCase()}</p>`
+      },
+      choices: ['w','n'],
+      data: {
+        target: jsPsych.timelineVariable('word'),
+        target_type: jsPsych.timelineVariable('lebel'),
+        task: 'target'
+      },
+      on_finish: function(data){
+        if(data.lebel== 'nonvalid'){
+          data.correct = jsPsych.pluginAPI.compareKeys(data.key_press, 'n');
+        } else {
+          data.correct = jsPsych.pluginAPI.compareKeys(data.key_press, 'w');
+        }
+      },
+      trial_duration: 300,
+      post_trial_gap: 2700,
+    }
+
+    // define procedure
+    var test_procedure = {
+      timeline: [target],
+      timeline_variables: test_stimuli,
+      data: {
+        phase: 'test'
+      },
+      randomize_order: true
+    }
+
+    timeline.push(test_procedure);
+
+    /* start the experiment */
+    jsPsych.init({ 
+      timeline: timeline,
+      on_finish: function() {
+      jsPsych.data.displayData();
+      jsPsych.data.get().localSave('json','mydata.json');
+      }
+    });
+  </script>
+</html>
