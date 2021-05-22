@@ -8,11 +8,9 @@ JsPsych is used to develop a simple task, which is also known as a lexical decis
 * The word will appear on the screen for a short time only.
 * After that a blank screen will appear for 2700ms.
 * It is imperative that you make your decisions as quickly as possible while still preserving the accuracy of you answers.
-
-        ```
-        To indicate that a word is a real word, press the "W" key on the keyboard.
-        To indicate that a word is a non-word, press the "N" key on the keyboard.
-        ```
+* To indicate that a word is a real word, press the "W" key on the keyboard.
+* To indicate that a word is a non-word, press the "N" key on the keyboard.
+      
         
 ### Experiment Link
 [https://anahika.github.io/experiment/](https://anahika.github.io/experiment/)
