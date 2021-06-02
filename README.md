@@ -13,4 +13,4 @@ JsPsych is used to develop a simple task, which is also known as a lexical decis
       
         
 ### Experiment Link
-[https://anahika.github.io/lexical-decision-task/](https://anahika.github.io/lexical-decision-task/)
+[https://anahika.github.io/experiment/](https://anahika.github.io/experiment/)

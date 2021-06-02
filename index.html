@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My experiment</title>
+    <title>Lexical Decision Task</title>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">   
+   
+         <!-- jspsych css -->
+         <link href="jspsych-6.3.1/css/jspsych.css" rel="stylesheet" type="text/css">
+        
+        <!-- custom css -->
+        <link rel="stylesheet" href="./index.css"> 
+
     <script src="jspsych-6.3.1/jspsych.js"></script>
+    <script src="jspsych-6.3.1/plugins/jspsych-html-button-response.js"></script>
     <script src="jspsych-6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
-    <script src="jspsych-6.3.1/plugins/jspsych-image-keyboard-response.js"></script>
-    <script src="jspsych-6.3.1/plugins/jspsych-preload.js"></script>
     <script src="stimuli.js"></script>
-    <link href="jspsych-6.3.1/css/jspsych.css" rel="stylesheet" type="text/css">
   </head>
   <body></body>
   <script>
@@ -15,25 +27,26 @@
     /* create timeline */
     var timeline = [];
 
-    /* define welcome message trial */
-    var welcome = {
-      type: "html-keyboard-response",
-      stimulus: "Welcome to the experiment. Press any key to begin."
-    };
-    timeline.push(welcome);
-
     /* define instructions trial */
     var instructions = {
-      type: 'html-keyboard-response',
-      stimulus: `<p>In the following experiment you will be shown pairs of words and asked to determine
-        whether the  word in  is a real word (e.g., "group" or "red") or a
-        non-word (e.g., "gork" or "polie").</p>
-        <p>The word will appear on the screen for a short time only.
-        After that a blank screen will appear for 2700ms.. It is imperative that you make
-        your decisions as quickly as possible while still preserving the accuracy of you answers.</p>
-        <p>To indicate that a word is a real word, press the "W" key on the keyboard.</p>
-        <p>To indicate that a word is a non-word, press the "N" key on the keyboard.</p>
-        <p>Press any key to continue.</p>`,
+      type: 'html-button-response',
+      stimulus: `
+      <div class="container justify-content-center align-items-center">
+                  <div class="card card1" >
+                    <div class="card-body">
+                      <h5 class="card-title"><strong>Welcome dear!</strong></h5>
+                      <p>In the following experiment you will be shown pairs of words and asked to determine
+                        whether the  word in  is a real word (e.g., "group" or "red") or a
+                        non-word (e.g., "gork" or "polie").</p>
+                        <p>It is imperative that you make your decisions as quickly as possible while still preserving the accuracy of you answers.</p>
+                        <p>To indicate that a word is a real word, press the "W" key on the keyboard.</p>
+                        <p>To indicate that a word is a non-word, press the "N" key on the keyboard.</p>                     
+                    </div>
+              </div>
+        </div>
+        `,
+        choices: ["Continue"],
+        button_html:'<button class="btn btn-lg btn-dark mt-3">%choice%</button>'
     }
     timeline.push(instructions);
 
@@ -50,14 +63,13 @@
         task: 'target'
       },
       on_finish: function(data){
-        if(data.lebel== 'nonvalid'){
-          data.correct = jsPsych.pluginAPI.compareKeys(data.key_press, 'n');
+        if(data.target_type == 'nonvalid'){
+          data.correct = jsPsych.pluginAPI.compareKeys(data.response, 'n');
         } else {
-          data.correct = jsPsych.pluginAPI.compareKeys(data.key_press, 'w');
+          data.correct = jsPsych.pluginAPI.compareKeys(data.response, 'w');
         }
       },
-      trial_duration: 300,
-      post_trial_gap: 2700,
+      post_trial_gap: 700,
     }
 
     // define procedure
@@ -72,13 +84,56 @@
 
     timeline.push(test_procedure);
 
+        /* define debrief */
+
+     var result = {
+      type: "html-button-response",
+      stimulus: function () {
+        var trials = jsPsych.data.get().filter({ task: "target" });
+        var correct_trials = trials.filter({ correct: true });
+        var accuracy = Math.round(
+          (correct_trials.count() / trials.count()) * 100
+        );
+        var rt = Math.round(correct_trials.select("rt").mean());
+
+        return `
+        <div class="alert alert-success" role="alert">
+            <h4 class="alert-heading">Congrats!</h4>
+            <p>You successfully completed your test.</p>
+            <p>Your accuracy is ${accuracy}%.</p>
+            <hr>
+            <p>Press continue to check correct response of each question.</p>
+          </div>
+          `;
+      },
+      choices: ["Continue"],
+      button_html:'<button class="btn btn-lg btn-success mt-3">%choice%</button>'
+
+    };
+
+    timeline.push(result)
+
+    var end = {
+      type: `html-keyboard-response`,
+      stimulus: `<p>You're done! A .csv file containing your data should be automatically downloading right now.
+        Check your default downloads location to find it. Once you've found it you can close the experiment.</p>`,
+      on_load: function(){
+        jsPsych.data.get().filter({phase: 'test', task: 'target'})
+          .ignore('internal_node_id')
+          .ignore('time_elapsed')
+          .ignore('task')
+          .ignore('phase')
+          .ignore('trial_type')
+          .ignore('stimulus')
+          .ignore('trial_index')
+          .localSave('csv', 'lexical_decision.csv');
+      }
+    }
+    timeline.push(end);
+
     /* start the experiment */
     jsPsych.init({ 
       timeline: timeline,
-      on_finish: function() {
-      jsPsych.data.displayData();
-      jsPsych.data.get().localSave('json','mydata.json');
-      }
     });
   </script>
 </html>
